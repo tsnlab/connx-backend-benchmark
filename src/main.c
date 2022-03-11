@@ -105,30 +105,6 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void do_plus(float* left, float* right, float* result, size_t count) {
-    for (int i = 0; i < count; i++) {
-        result[i] = left[i] + right[i];
-    }
-}
-
-void do_minus(float* left, float* right, float* result, size_t count) {
-    for (int i = 0; i < count; i++) {
-        result[i] = left[i] - right[i];
-    }
-}
-
-void do_multiply(float* left, float* right, float* result, size_t count) {
-    for (int i = 0; i < count; i++) {
-        result[i] = left[i] * right[i];
-    }
-}
-
-void do_divide(float* left, float* right, float* result, size_t count) {
-    for (int i = 0; i < count; i++) {
-        result[i] = left[i] / right[i];
-    }
-}
-
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 void dummy(float* left, float* right, float* result, size_t count) {
