@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 
     struct timespec start, end, elapsed;
 
+    // Add
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_plus(left, right, result, BATCH_SIZE);
@@ -70,8 +71,16 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
 
+    // validation
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        if (result[i] != left[i] + right[i]) {
+            printf("ERROR: [%d]: %f + %f = %f != %f\n", i, left[i], right[i], left[i] + right[i], result[i]);
+        }
+    }
+
     printf("Plus: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
 
+    // Subtract
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_minus(left, right, result, BATCH_SIZE);
@@ -80,8 +89,16 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
 
+    // validation
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        if (result[i] != left[i] - right[i]) {
+            printf("ERROR: [%d]: %f - %f = %f != %f\n", i, left[i], right[i], left[i] - right[i], result[i]);
+        }
+    }
+
     printf("Minus: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
 
+    // Multiply
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_multiply(left, right, result, BATCH_SIZE);
@@ -90,8 +107,16 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
 
+    // validation
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        if (result[i] != left[i] * right[i]) {
+            printf("ERROR: [%d]: %f - %f = %f != %f\n", i, left[i], right[i], left[i] * right[i], result[i]);
+        }
+    }
+
     printf("Multiply: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
 
+    // Divide
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_divide(left, right, result, BATCH_SIZE);
@@ -99,6 +124,13 @@ int main(int argc, char *argv[]) {
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
+
+    // validation
+    for (int i = 0; i < BATCH_SIZE; i++) {
+        if (result[i] != left[i] / right[i]) {
+            printf("ERROR: [%d]: %f / %f = %f != %f\n", i, left[i], right[i], left[i] / right[i], result[i]);
+        }
+    }
 
     printf("Divide: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
 
