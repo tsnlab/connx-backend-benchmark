@@ -16,6 +16,22 @@ case $backend in
         rm -f a.out
         ;;
 
+    "xsmm")
+        if [ -z "$PKG_CONFIG_PATH" ]; then
+            echo "Warning: PKG_CONFIG_PATH not set"
+        fi
+
+        CFLAGS=$(pkg-config --cflags --libs libxsmm)
+
+        echo '* XSMM: -O0'
+        gcc -O0 src/main.c src/xsmm.c $CFLAGS && ./a.out
+
+        echo '* XSMM: -O3'
+        gcc -O3 src/main.c src/xsmm.c $CFLAGS && ./a.out
+
+        rm -f a.out
+        ;;
+
     "cpu")
         echo '* CPU: -O0'
         gcc -O0 src/main.c src/cpu.c && ./a.out
