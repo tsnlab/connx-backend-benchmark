@@ -6,6 +6,8 @@
 #define BATCH_SIZE 4096
 #define BATCH_COUNT 100000
 
+void initialize();
+void deinitialize();
 void do_plus(float* left, float* right, float* result, size_t count);
 void do_minus(float* left, float* right, float* result, size_t count);
 void do_multiply(float* left, float* right, float* result, size_t count);
@@ -47,6 +49,8 @@ int main(int argc, char *argv[]) {
         right[i] = rand_float32();
         result[i] = 0.0;
     }
+
+    initialize();
 
     // Warming up
     for (int i = 0; i < 100; i++) {
@@ -133,6 +137,8 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Divide: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
+
+    deinitialize();
 
     return 0;
 }

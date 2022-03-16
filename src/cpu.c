@@ -1,5 +1,8 @@
 #include <stdlib.h>
 
+void initialize() {}
+void deinitialize() {}
+
 void do_plus(float* left, float* right, float* result, size_t count) {
     for (int i = 0; i < count; i++) {
         result[i] = left[i] + right[i];
