@@ -25,4 +25,63 @@ case $backend in
 
         rm -f a.out
         ;;
+    "zynq")
+        # setting environment
+        VITIS_HOME="${XILINX_VITIS:-/opt/Xilinx/Vitis/2021.2}"
+        source "${VITIS_HOME}/settings64.sh"
+        path=$(dirname "$(readlink -e "$0")")
+        cd "$path" || true
+        BASEDIR=`pwd`
+        option="${2:-O0}"
+
+        # create platform
+        xsct <<-EOF
+        setws
+        platform create -name {design_1_wrapper} -hw {design_1_wrapper.xsa} -out .;platform write
+        domain create -name {freertos10_xilinx_ps7_cortexa9_0} -display-name {freertos10_xilinx_ps7_cortexa9_0} -os {freertos10_xilinx} -proc {ps7_cortexa9_0} -runtime {cpp} -arch {32-bit} -support-app {freertos_hello_world}
+        platform write
+        platform active {design_1_wrapper}
+        domain active {zynq_fsbl}
+        domain active {freertos10_xilinx_ps7_cortexa9_0}
+        bsp setlib -name xilffs
+        platform generate
+        app create -name test -platform design_1_wrapper -domain {freertos10_xilinx_ps7_cortexa9_0} -sysproj {test_system} -template {Empty Application(C)}
+EOF
+
+        cp src/cpu.c src/main.c test/src
+
+        # increase stack and heap memory size
+        sed -i 's/0x2000/0x1E8480/g' test/src/lscript.ld
+        if [ $option = "O0" ]; then
+            xsct <<-EOF
+            setws
+            app config -name test compiler-optimization "None (-O0)"
+EOF
+        else
+            xsct <<-EOF
+            setws
+            app config -name test compiler-optimization "Optimize most (-O3)"
+EOF
+        fi
+
+        xsct <<-EOF
+        setws
+        app build -name test
+        connect
+        source design_1_wrapper/hw/ps7_init.tcl
+        targets -set -nocase -filter {name =~ "Arm*#0"}
+        stop
+        ps7_init
+        rst -processor
+        dow test/Debug/test.elf
+        source design_1_wrapper/hw/ps7_init.tcl
+        targets -set -nocase -filter {name =~ "Arm*#0"}
+        stop
+        ps7_init
+        rst -processor
+        dow test/Debug/test.elf
+        con
+        disconnect
+EOF
+        rm -rf .metadata .Xil design_1_wrapper test test_system .analytics IDE.log
 esac

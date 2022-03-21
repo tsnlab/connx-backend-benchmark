@@ -27,3 +27,11 @@ pushd XNNPACK
 ./scripts/build-local.sh
 popd
 ```
+
+# ZYNQ
+- See https://github.com/tsnlab/connx/blob/master/ports/zynq/README.md for setting zynq benchmark test.
+### RUN
+- O0 option
+    - `./test.sh zynq O0`
+- O3 option
+    - `./test.sh zynq O3`
