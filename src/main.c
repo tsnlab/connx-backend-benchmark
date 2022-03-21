@@ -210,11 +210,12 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-
 #ifdef __linux__
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
-#pragma GCC pop_options
 #endif /* __linux__ */
 void dummy(float* left, float* right, float* result, size_t count) {
 }
+#ifdef __linux__
+#pragma GCC pop_options
+#endif /* __linux__*/
