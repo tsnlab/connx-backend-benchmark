@@ -4,11 +4,11 @@
 
 #ifdef __linux__
 #include <time.h>
-#else
+#elif defined(__zynq__)
 #include "xil_printf.h"
 #include "xparameters.h"
 #include "xtime_l.h"
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
 #define BATCH_SIZE 4096
 #define BATCH_COUNT 100000
@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
     float left[BATCH_SIZE], right[BATCH_SIZE];
     float result[BATCH_SIZE];
 
-
     if (argc > 1) {
         srand(atoi(argv[1]));
     } else {
@@ -71,18 +70,19 @@ int main(int argc, char *argv[]) {
         do_divide(left, right, result, BATCH_SIZE);
         dummy(left, right, result, BATCH_SIZE);
     }
+
 #ifdef __linux__
     struct timespec start, end, elapsed;
-#else
+#elif defined(__zynq__)
     XTime start, end;
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     // Add
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &start);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&start);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_plus(left, right, result, BATCH_SIZE);
@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&end);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     // validation
     for (int i = 0; i < BATCH_SIZE; i++) {
@@ -105,16 +105,16 @@ int main(int argc, char *argv[]) {
 
 #ifdef __linux__
     printf("Plus: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
-#else
-    printf("Plus: %.9f\n", 1.0 * (end - start)/(COUNTS_PER_SECOND/1000000) / 1000000);
-#endif /* __linux__ */
+#elif defined(__zynq__)
+    printf("Plus: %.9f\n", 1.0 * (end - start) / (COUNTS_PER_SECOND / 1000000) / 1000000);
+#endif /* __zynq__ */
 
     // Subtract
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &start);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&start);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_minus(left, right, result, BATCH_SIZE);
@@ -124,9 +124,9 @@ int main(int argc, char *argv[]) {
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&end);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     // validation
     for (int i = 0; i < BATCH_SIZE; i++) {
@@ -137,16 +137,16 @@ int main(int argc, char *argv[]) {
 
 #ifdef __linux__
     printf("Minus: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
-#else
-    printf("Minus: %.9f\n", 1.0 * (end - start)/(COUNTS_PER_SECOND/1000000) / 1000000);
-#endif /* __linux__ */
+#elif defined(__zynq__)
+    printf("Minus: %.9f\n", 1.0 * (end - start) / (COUNTS_PER_SECOND / 1000000) / 1000000);
+#endif /* __zynq__ */
 
     // Multiply
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &start);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&start);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_multiply(left, right, result, BATCH_SIZE);
@@ -156,9 +156,9 @@ int main(int argc, char *argv[]) {
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&end);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     // validation
     for (int i = 0; i < BATCH_SIZE; i++) {
@@ -169,16 +169,16 @@ int main(int argc, char *argv[]) {
 
 #ifdef __linux__
     printf("Multiply: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
-#else
-    printf("Multiply: %.9f\n", 1.0 * (end - start)/(COUNTS_PER_SECOND/1000000) / 1000000);
-#endif /* __linux__ */
+#elif defined(__zynq__)
+    printf("Multiply: %.9f\n", 1.0 * (end - start) / (COUNTS_PER_SECOND / 1000000) / 1000000);
+#endif /* __zynq__ */
 
     // Divide
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &start);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&start);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     for (int i = 0; i < BATCH_COUNT; i++) {
         do_divide(left, right, result, BATCH_SIZE);
@@ -188,9 +188,9 @@ int main(int argc, char *argv[]) {
 #ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &end);
     timespec_diff(&start, &end, &elapsed);
-#else
+#elif defined(__zynq__)
     XTime_GetTime(&end);
-#endif /* __linux__ */
+#endif /* __zynq__ */
 
     // validation
     for (int i = 0; i < BATCH_SIZE; i++) {
@@ -201,17 +201,20 @@ int main(int argc, char *argv[]) {
 
 #ifdef __linux__
     printf("Divide: %2lu.%09lu\n", elapsed.tv_sec, elapsed.tv_nsec);
-#else
-    printf("Divide: %.9f\n", 1.0 * (end - start)/(COUNTS_PER_SECOND/1000000) / 1000000);
-#endif /* __linux__ */
+#elif defined(__zynq__)
+    printf("Divide: %.9f\n", 1.0 * (end - start) / (COUNTS_PER_SECOND / 1000000) / 1000000);
+#endif /* __zynq__ */
 
     deinitialize();
 
     return 0;
 }
 
+
+#ifdef __linux__
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
+#pragma GCC pop_options
+#endif /* __linux__ */
 void dummy(float* left, float* right, float* result, size_t count) {
 }
-#pragma GCC pop_options

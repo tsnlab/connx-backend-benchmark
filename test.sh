@@ -34,7 +34,7 @@ case $backend in
         BASEDIR=`pwd`
         option="${2:-O0}"
 
-        # create platform
+        # create platform, domain, and application
         xsct <<-EOF
         setws
         platform create -name {design_1_wrapper} -hw {design_1_wrapper.xsa} -out .;platform write
@@ -64,8 +64,11 @@ EOF
 EOF
         fi
 
+        # application config, and build
+        # reset board, and upload code to board
         xsct <<-EOF
         setws
+        app config -name test define-compiler-symbols "__zynq__"
         app build -name test
         connect
         source design_1_wrapper/hw/ps7_init.tcl
