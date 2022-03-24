@@ -21,7 +21,7 @@ case $backend in
             echo "Warning: PKG_CONFIG_PATH not set"
         fi
 
-        CFLAGS=$(pkg-config --cflags --libs libxsmm)
+        CFLAGS="$(pkg-config --cflags --libs libxsmm) -lblas"
 
         echo '* XSMM: -O0'
         gcc -O0 src/main.c src/xsmm.c $CFLAGS && ./a.out

@@ -5,9 +5,9 @@ static inline void do_op(const libxsmm_meltw_binary_type op_type, float* left, f
     libxsmm_meltw_binary_flags binary_flags;
     libxsmm_meltw_binary_shape binary_shape = libxsmm_create_meltw_binary_shape(
             count /* M */, 1/* N */,
-            0 /*ldi*/,
-            0 /*ldi*/,
-            0 /*ldo*/,
+            4096 /*ldi*/,
+            4096 /*ldi*/,
+            4096 /*ldo*/,
             LIBXSMM_DATATYPE_F32 /*dtype_in*/,
             LIBXSMM_DATATYPE_F32 /*dtype_out*/,
             LIBXSMM_DATATYPE_F32 /*dtype_comp */);
