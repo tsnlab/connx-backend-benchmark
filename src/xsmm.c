@@ -1,13 +1,16 @@
 #include <libxsmm.h>
 
+void initialize() {}
+void deinitialize() {}
+
 static inline void do_op(const libxsmm_meltw_binary_type op_type, float* left, float* right, float* result, size_t count) {
     libxsmm_meltw_binary_param binary_param;
     libxsmm_meltw_binary_flags binary_flags;
     libxsmm_meltw_binary_shape binary_shape = libxsmm_create_meltw_binary_shape(
             count /* M */, 1/* N */,
-            4096 /*ldi*/,
-            4096 /*ldi*/,
-            4096 /*ldo*/,
+            count /*ldi*/,
+            count /*ldi*/,
+            count /*ldo*/,
             LIBXSMM_DATATYPE_F32 /*dtype_in*/,
             LIBXSMM_DATATYPE_F32 /*dtype_out*/,
             LIBXSMM_DATATYPE_F32 /*dtype_comp */);
