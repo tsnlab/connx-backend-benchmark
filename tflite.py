@@ -1,5 +1,6 @@
 #!/usr/bin/env -S python3 -u
 
+import decimal
 import glob
 import sys
 from os import path
@@ -41,4 +42,5 @@ for idx, input_tensor in enumerate(input_tensors):
 
 result = timeit.timeit(interpreter.invoke, number=count)
 
-print(f'{count} invocations took {result} seconds')
+result_d = decimal.Decimal(result) * 1_000_000_000  # ns
+print(f'{count} invocations took {result_d} ns')
