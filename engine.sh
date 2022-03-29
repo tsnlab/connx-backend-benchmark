@@ -2,14 +2,15 @@
 set -eo pipefail
 
 CONNX_EXE="./connx"
-CONNX_TEST_PATH="converted_tests"
+TFLITE_EXE="./tflite.py"
+TEST_PATH="converted_tests"
 BATCH_COUNT=1000000
 
 RESULTS_PATH="engine_results"
 
 filename_for_dataset() {
   local p=$1
-  p="${p##${CONNX_TEST_PATH}/}"
+  p="${p##${TEST_PATH}/}"
   echo "${p//\//_}"
 }
 
@@ -23,20 +24,40 @@ run_connx() {
 
     mkdir -p "$RESULTS_PATH"
 
-    for testcase in "$CONNX_TEST_PATH"/*; do
+    for testcase in "$TEST_PATH"/*; do
         echo "Running testcase $testcase"
         for dataset in "$testcase"/test_data_set_*; do
-            if [ -d "$dataset" ]; then
-                echo "Running dataset $dataset"
-                fname=$(filename_for_dataset "${dataset}")
-                $CONNX_EXE "$testcase" "$dataset"/input_*.data -p $BATCH_COUNT > "$RESULTS_PATH/connx_$fname"
+            if [ ! -d "$dataset" ]; then
+                continue
             fi
+
+            echo "Running dataset $dataset"
+            fname=$(filename_for_dataset "${dataset}")
+            $CONNX_EXE "$testcase" "$dataset"/input_*.data -p $BATCH_COUNT > "$RESULTS_PATH/connx_$fname"
         done
     done
 }
 
 run_tflite() {
-    :
+    mkdir -p "$RESULTS_PATH"
+
+    for testcase in "$TEST_PATH"/*; do
+        echo "Running testcase $testcase"
+        if [ ! -e "$testcase/model.tflite" ]; then
+            echo "No tflite model found for $testcase"
+            continue
+        fi
+
+        for dataset in "$testcase"/test_data_set_*; do
+            if [ ! -d "$dataset" ]; then
+              continue
+            fi
+
+            echo "Running dataset $dataset"
+            fname=$(filename_for_dataset "${dataset}")
+            $TFLITE_EXE "$testcase" "$dataset" $BATCH_COUNT 2>/dev/null | tee "$RESULTS_PATH/tflite_$fname" || echo "TFLite failed"
+        done
+    done
 }
 
 if [ $# -ne 1 ]; then
