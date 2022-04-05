@@ -48,7 +48,8 @@ case $backend in
         path=$(dirname "$(readlink -e "$0")")
         cd "$path" || true
         BASEDIR=`pwd`
-        option="${2:-O0}"
+        target="${2:-ps}"
+        option="${3:-O0}"
 
         # create platform, domain, and application
         xsct <<-EOF
@@ -64,7 +65,11 @@ case $backend in
         app create -name test -platform design_1_wrapper -domain {freertos10_xilinx_ps7_cortexa9_0} -sysproj {test_system} -template {Empty Application(C)}
 EOF
 
-        cp src/cpu.c src/main.c test/src
+        if [ $target = "ps" ]; then
+            cp src/cpu.c src/main.c test/src
+        else
+            cp src/npu.c src/main.c test/src
+        fi
 
         # increase stack and heap memory size
         sed -i 's/0x2000/0x1E8480/g' test/src/lscript.ld
@@ -82,6 +87,13 @@ EOF
 
         # application config, and build
         # reset board, and upload code to board
+        if [ $target = "npu" ]; then
+            xsct << EOF
+            setws
+            app config -name test define-compiler-symbols "__npu__"
+EOF
+        fi
+
         xsct <<-EOF
         setws
         app config -name test define-compiler-symbols "__zynq__"

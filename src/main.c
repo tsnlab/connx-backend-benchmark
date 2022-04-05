@@ -11,7 +11,11 @@
 #endif /* __zynq__ */
 
 #define BATCH_SIZE 4096
+#ifdef __npu__
+#define BATCH_COUNT 10000
+#else
 #define BATCH_COUNT 100000
+#endif /* __npu__ */
 
 void initialize();
 void deinitialize();

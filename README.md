@@ -32,6 +32,14 @@ popd
 - See https://github.com/tsnlab/connx/blob/master/ports/zynq/README.md for setting zynq benchmark test.
 ### RUN
 - O0 option
-    - `./test.sh zynq O0`
+    - `./test.sh zynq ps O0`
 - O3 option
-    - `./test.sh zynq O3`
+    - `./test.sh zynq ps O3`
+
+# NPU
+- Prerequisites for running on zynq npus are not yet supported.
+### RUN
+- O0 option
+    - `./test.sh zynq npu O0`
+- O3 option
+    - `./test.sh zynq npu O3`
