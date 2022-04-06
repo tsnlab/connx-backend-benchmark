@@ -7,7 +7,7 @@ CONNX_EXE="connx-run"
 TFLITE_EXE="./tflite.py"
 BATCH_COUNT=${BATCH_COUNT:-100000}
 
-RESULTS_PATH="engine_results"
+RESULTS_TSV="engine_results.tsv"
 
 TEST_PATH=$(mktemp -d)
 trap 'rm -rf "$TESTS_DIR"' EXIT
@@ -15,7 +15,7 @@ trap 'rm -rf "$TESTS_DIR"' EXIT
 check_dependencies() {
     installed_packages=$(pip list 2>/dev/null | cut -d' ' -f1)
     failed=0
-    for package in {'onnx-connx','onnx','tensorflow'}; do
+    for package in {'onnx-connx','onnx','tensorflow','onnx-tf'}; do
         if ! echo "$installed_packages" | grep -q -E "^$package$"; then
             echo "Please install $package before running this script"
             failed=1
@@ -62,8 +62,6 @@ run_connx() {
         exit 1
     fi
 
-    mkdir -p "$RESULTS_PATH"
-
     for testcase in "$TEST_PATH"/test_*; do
         echo "Running testcase $testcase"
         for dataset in "$testcase"/test_data_set_*; do
@@ -71,17 +69,19 @@ run_connx() {
                 continue
             fi
 
+            test_name=$(basename "$testcase")
+            dataset_name=$(basename "$dataset")
 
             echo "Running dataset $dataset"
-            fname=$(filename_for_dataset "${dataset}")
-            $CONNX_EXE -p "$BATCH_COUNT" "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk "{print \"$BATCH_COUNT invocations took \" \$2 \" ns\"}" | tee "$RESULTS_PATH/connx_$fname"
+            result=$($CONNX_EXE -p "$BATCH_COUNT" "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk '{print $2}' || echo "Failed")
+
+            printf "connx\t%s\t%s\t%s\n" "$test_name" "$dataset_name" "$result" | tee -a "$RESULTS_TSV"
+
         done
     done
 }
 
 run_tflite() {
-    mkdir -p "$RESULTS_PATH"
-
     for testcase in "$TEST_PATH"/test_*; do
         echo "Running testcase $testcase"
         if [ ! -e "$testcase/model.tflite" ]; then
@@ -94,9 +94,12 @@ run_tflite() {
               continue
             fi
 
+            test_name=$(basename "$testcase")
+            dataset_name=$(basename "$dataset")
+
             echo "Running dataset $dataset"
-            fname=$(filename_for_dataset "${dataset}")
-            $TFLITE_EXE "$testcase" "$dataset" "$BATCH_COUNT" 2>/dev/null | tee "$RESULTS_PATH/tflite_$fname" || echo "TFLite failed"
+            result=$($TFLITE_EXE "$testcase" "$dataset" "$BATCH_COUNT" 2>/dev/null || echo "Failed")
+            printf "tflite\t%s\t%s\t%s\n" "$test_name" "$dataset_name" "$result" | tee -a "$RESULTS_TSV"
         done
     done
 }
@@ -113,6 +116,8 @@ shift
 check_dependencies
 
 make_tests "$operator"
+
+printf "engine\ttest_name\tdataset_name\tresult(ns)\n" > "$RESULTS_TSV"
 
 echo "Running connx"
 run_connx "$@"
