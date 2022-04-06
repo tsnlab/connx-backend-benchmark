@@ -1,23 +1,10 @@
 #!/bin/bash
 set -eo pipefail
 
-CONNX_EXE="./connx"
+CONNX_EXE="connx-run"
 TFLITE_EXE="./tflite.py"
 TEST_PATH="converted_tests"
-BATCH_COUNT=1000000
-
-declare -A BATCH_COUNT_OVERRIDES
-
-BATCH_COUNT_OVERRIDES["test_maxpool_2d_default"]=$((BATCH_COUNT / 100))
-BATCH_COUNT_OVERRIDES["test_maxpool_2d_pads"]=$((BATCH_COUNT / 100))
-BATCH_COUNT_OVERRIDES["test_maxpool_2d_same_lower"]=$((BATCH_COUNT / 100))
-BATCH_COUNT_OVERRIDES["test_maxpool_2d_same_upper"]=$((BATCH_COUNT / 100))
-BATCH_COUNT_OVERRIDES["test_maxpool_2d_strides"]=$((BATCH_COUNT / 100))
-BATCH_COUNT_OVERRIDES["test_maxpool_3d_default"]=$((BATCH_COUNT / 1000))
-BATCH_COUNT_OVERRIDES["test_maxpool_3d_pads"]=$((BATCH_COUNT / 1000))
-BATCH_COUNT_OVERRIDES["test_maxpool_3d_same_lower"]=$((BATCH_COUNT / 1000))
-BATCH_COUNT_OVERRIDES["test_maxpool_3d_same_upper"]=$((BATCH_COUNT / 1000))
-BATCH_COUNT_OVERRIDES["test_maxpool_3d_strides"]=$((BATCH_COUNT / 1000))
+BATCH_COUNT=${BATCH_COUNT:-1000000}
 
 RESULTS_PATH="engine_results"
 
@@ -30,7 +17,7 @@ filename_for_dataset() {
 
 run_connx() {
     # Check connx file exists and executable
-    if [ ! -x "$CONNX_EXE" ]; then
+    if ! command -v $CONNX_EXE >/dev/null 2>&1; then
         echo "connx executable not found"
         exit 1
     fi
@@ -39,7 +26,6 @@ run_connx() {
 
     for testcase in "$TEST_PATH"/test_*; do
         echo "Running testcase $testcase"
-        batch_count=${BATCH_COUNT_OVERRIDES[$(basename "$testcase")]:-$BATCH_COUNT}
         for dataset in "$testcase"/test_data_set_*; do
             if [ ! -d "$dataset" ]; then
                 continue
@@ -48,7 +34,7 @@ run_connx() {
 
             echo "Running dataset $dataset"
             fname=$(filename_for_dataset "${dataset}")
-            $CONNX_EXE "$testcase" "$dataset"/input_*.data -p $batch_count > "$RESULTS_PATH/connx_$fname"
+            $CONNX_EXE -p $BATCH_COUNT "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk "{print \"$BATCH_COUNT invocations took \" \$2 \" ns\"}" > "$RESULTS_PATH/connx_$fname"
         done
     done
 }
@@ -63,8 +49,6 @@ run_tflite() {
             continue
         fi
 
-        batch_count=${BATCH_COUNT_OVERRIDES[$(basename "$testcase")]:-$BATCH_COUNT}
-
         for dataset in "$testcase"/test_data_set_*; do
             if [ ! -d "$dataset" ]; then
               continue
@@ -72,7 +56,7 @@ run_tflite() {
 
             echo "Running dataset $dataset"
             fname=$(filename_for_dataset "${dataset}")
-            $TFLITE_EXE "$testcase" "$dataset" $batch_count 2>/dev/null | tee "$RESULTS_PATH/tflite_$fname" || echo "TFLite failed"
+            $TFLITE_EXE "$testcase" "$dataset" "$BATCH_COUNT" 2>/dev/null | tee "$RESULTS_PATH/tflite_$fname" || echo "TFLite failed"
         done
     done
 }
