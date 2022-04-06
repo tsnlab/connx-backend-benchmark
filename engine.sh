@@ -12,6 +12,21 @@ RESULTS_PATH="engine_results"
 TEST_PATH=$(mktemp -d)
 trap 'rm -rf "$TESTS_DIR"' EXIT
 
+check_dependencies() {
+    installed_packages=$(pip list 2>/dev/null | cut -d' ' -f1)
+    failed=0
+    for package in {'onnx-connx','onnx','tensorflow'}; do
+        if ! echo "$installed_packages" | grep -q -E "^$package$"; then
+            echo "Please install $package before running this script"
+            failed=1
+        fi
+    done
+
+    if [ $failed -eq 1 ]; then
+        exit 1
+    fi
+}
+
 
 onnx_path() {
     python -c 'import os; import onnx; print(os.path.dirname(onnx.__file__))'
@@ -94,6 +109,8 @@ fi
 
 operator=$1
 shift
+
+check_dependencies
 
 make_tests "$operator"
 
