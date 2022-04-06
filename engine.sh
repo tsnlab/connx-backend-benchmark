@@ -1,16 +1,41 @@
 #!/bin/bash
 set -eo pipefail
 
+BASEPATH=$(dirname "$0")
+
 CONNX_EXE="connx-run"
 TFLITE_EXE="./tflite.py"
-TEST_PATH="converted_tests"
-BATCH_COUNT=${BATCH_COUNT:-1000000}
+BATCH_COUNT=${BATCH_COUNT:-100000}
 
 RESULTS_PATH="engine_results"
 
+TEST_PATH=$(mktemp -d)
+trap 'rm -rf "$TESTS_DIR"' EXIT
+
+
+onnx_path() {
+    python -c 'import os; import onnx; print(os.path.dirname(onnx.__file__))'
+}
+
+make_tests() {
+    local test_pattern="$1"
+
+    # Convert tests
+    find "$(onnx_path)/backend/test/data/node" -maxdepth 1 -type d \( -name "test_${test_pattern}" -or -name "test_${test_pattern}_*" \) | while read -r test_dir; do
+        test_name=$(basename "$test_dir")
+        echo "Copying $test_name"
+
+        # Copy onnx
+        rsync -srtulH "${test_dir}/" "$TEST_PATH/$test_name/"
+
+    done
+
+    TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null
+}
+
 filename_for_dataset() {
   local p=$1
-  p="${p##${TEST_PATH}/}"
+  p="${p##"${TEST_PATH}"/}"
   echo "${p//\//_}"
 }
 
@@ -34,7 +59,7 @@ run_connx() {
 
             echo "Running dataset $dataset"
             fname=$(filename_for_dataset "${dataset}")
-            $CONNX_EXE -p $BATCH_COUNT "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk "{print \"$BATCH_COUNT invocations took \" \$2 \" ns\"}" > "$RESULTS_PATH/connx_$fname"
+            $CONNX_EXE -p "$BATCH_COUNT" "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk "{print \"$BATCH_COUNT invocations took \" \$2 \" ns\"}" | tee "$RESULTS_PATH/connx_$fname"
         done
     done
 }
@@ -62,22 +87,16 @@ run_tflite() {
 }
 
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <engine>"
+  echo "Usage: $0 <operator>"
   exit 1
 fi
 
-engine=$1
+operator=$1
 shift
 
-case $engine in
-  "connx")
-      run_connx "$@"
-    ;;
-  "tflite")
-      run_tflite "$@"
-    ;;
-  *)
-    echo "Unknown engine: $engine"
-    exit 1
-    ;;
-esac
+make_tests "$operator"
+
+echo "Running connx"
+run_connx "$@"
+echo "Running tflite"
+run_tflite "$@"

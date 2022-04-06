@@ -6,9 +6,9 @@ import onnx
 from onnx_tf.backend import prepare
 import tensorflow as tf
 
-TESTS_PATH = './converted_tests'
+TEST_PATH = os.environ['TEST_PATH']
 
-for test in glob.glob(os.path.join(TESTS_PATH, 'test_*')):
+for test in glob.glob(os.path.join(TEST_PATH, 'test_*')):
     try:
         print('Converting {}'.format(test))
         model_path = os.path.join(test, 'model.onnx')
