@@ -88,6 +88,7 @@ run_tflite() {
 
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <operator>"
+  echo "Example: $0 add"
   exit 1
 fi
 
