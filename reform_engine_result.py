@@ -15,9 +15,9 @@ with open('engine_results.tsv', 'r') as tsvfile:
         results[(test_name, dataset_name)].update({engine: result})
 
 
-# Write csv file
-with open('engine_results_reformed.csv', 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
+# Write tsv file
+with open('engine_results_reformed.csv', 'w') as tsvfile:
+    writer = csv.writer(tsvfile, delimiter='\t')
     writer.writerow(['test_name', 'dataset_name', 'connx', 'tflite'])
     for (test_name, dataset_name), engine_results in results.items():
         connx_result = engine_results.get('connx', 'Missing')
