@@ -35,8 +35,14 @@ onnx_path() {
 make_tests() {
     local test_pattern="$1"
 
+    if [ "$test_pattern" == "ALL" ]; then
+        find_pattern="*"
+    else
+        find_pattern="$test_pattern"
+    fi
+
     # Convert tests
-    find "$(onnx_path)/backend/test/data/node" -maxdepth 1 -type d \( -name "test_${test_pattern}" -or -name "test_${test_pattern}_*" \) | while read -r test_dir; do
+    find "$(onnx_path)/backend/test/data/node" -maxdepth 1 -type d \( -name "test_${test_pattern}" -or -name "test_${find_pattern}_*" \) | while read -r test_dir; do
         test_name=$(basename "$test_dir")
         echo "Copying $test_name"
 
@@ -45,7 +51,12 @@ make_tests() {
 
     done
 
-    TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null
+    if [ "$test_pattern" == "ALL" ]; then
+        # "ALL" is highly causes segfalt, So ignore it
+        TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null || true
+    else
+        TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null
+    fi
 }
 
 filename_for_dataset() {
@@ -107,6 +118,7 @@ run_tflite() {
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <operator>"
   echo "Example: $0 add"
+  echo "To run all tests (most will failing): $0 ALL"
   exit 1
 fi
 
@@ -123,3 +135,5 @@ echo "Running connx"
 run_connx "$@"
 echo "Running tflite"
 run_tflite "$@"
+
+cat "$RESULTS_TSV"
