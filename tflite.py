@@ -43,4 +43,4 @@ for idx, input_tensor in enumerate(input_tensors):
 result = timeit.timeit(interpreter.invoke, number=count)
 
 result_d = decimal.Decimal(result) * 1_000_000_000  # ns
-print(f'{count} invocations took {result_d} ns')
+print(f'{result_d:,.0f}')
