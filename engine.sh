@@ -42,7 +42,7 @@ make_tests() {
     fi
 
     # Convert tests
-    find "$(onnx_path)/backend/test/data/node" -maxdepth 1 -type d \( -name "test_${test_pattern}" -or -name "test_${find_pattern}_*" \) | while read -r test_dir; do
+    find "$(onnx_path)/backend/test/data" -maxdepth 2 -type d \( -name "test_${test_pattern}" -or -name "test_${find_pattern}_*" \) | while read -r test_dir; do
         test_name=$(basename "$test_dir")
         echo "Copying $test_name"
 
