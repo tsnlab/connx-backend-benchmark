@@ -10,7 +10,7 @@ BATCH_COUNT=${BATCH_COUNT:-100000}
 RESULTS_TSV="engine_results.tsv"
 
 TEST_PATH=$(mktemp -d)
-trap 'rm -rf "$TESTS_DIR"' EXIT
+trap 'rm -rf "$TEST_PATH"' RETURN INT TERM EXIT
 
 check_dependencies() {
     installed_packages=$(pip list 2>/dev/null | cut -d' ' -f1)
@@ -137,3 +137,5 @@ echo "Running tflite"
 run_tflite "$@"
 
 cat "$RESULTS_TSV"
+
+./reform_engine_result.py
