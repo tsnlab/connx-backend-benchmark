@@ -15,7 +15,7 @@ trap 'rm -rf "$TEST_PATH"' RETURN INT TERM EXIT
 check_dependencies() {
     installed_packages=$(pip list 2>/dev/null | cut -d' ' -f1)
     failed=0
-    for package in {'onnx-connx','onnx','tensorflow','onnx-tf'}; do
+    for package in {'onnx-connx','onnx','tensorflow','onnx-tf','tflite-runtime'}; do
         if ! echo "$installed_packages" | grep -q -E "^$package$"; then
             echo "Please install $package before running this script"
             failed=1

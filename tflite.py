@@ -9,7 +9,7 @@ from os import path
 import onnx
 from onnx import numpy_helper
 
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 
 
 def load_tensor(fname):
@@ -35,7 +35,7 @@ print(f'Output files: {len(output_files)}', file=sys.stderr)
 input_tensors = [load_tensor(fname) for fname in input_files]
 output_tensors = [load_tensor(fname) for fname in output_files]
 
-interpreter = tf.lite.Interpreter(path.join(model_path, 'model.tflite'))
+interpreter = tflite.Interpreter(path.join(model_path, 'model.tflite'))
 interpreter.allocate_tensors()
 for idx, input_tensor in enumerate(input_tensors):
     input_idx = interpreter.get_input_details()[idx]['index']
