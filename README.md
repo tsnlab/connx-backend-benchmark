@@ -3,7 +3,7 @@
 ./test.sh
 
 
-# XNNPACK
+## XNNPACK
 
 Install bazel to compile XNNPACK
 
@@ -28,7 +28,7 @@ pushd XNNPACK
 popd
 ```
 
-# ZYNQ
+## ZYNQ
 - See https://github.com/tsnlab/connx/blob/master/ports/zynq/README.md for setting zynq benchmark test.
 ### RUN
 - O0 option
@@ -36,10 +36,20 @@ popd
 - O3 option
     - `./test.sh zynq ps O3`
 
-# NPU
+## NPU
 - Prerequisites for running on zynq npus are not yet supported.
 ### RUN
 - O0 option
     - `./test.sh zynq npu O0`
 - O3 option
     - `./test.sh zynq npu O3`
+
+# Engine comparison
+
+```sh
+./engine.sh <operator>
+# Or pass ALL to test all onnx test cases
+./engine.sh ALL
+```
+
+It would convert and run matched onnx test cases, And Writes results into engine_results.tsv and engine_results_reformed.tsv
