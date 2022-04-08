@@ -3,11 +3,12 @@
 import decimal
 import glob
 import sys
-from os import path
 import timeit
+from os import path
 
 import onnx
 from onnx import numpy_helper
+
 import tensorflow as tf
 
 

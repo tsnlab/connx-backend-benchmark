@@ -48,12 +48,11 @@ make_tests() {
 
         # Copy onnx
         rsync -srtulH "${test_dir}/" "$TEST_PATH/$test_name/"
-
     done
 
     if [ "$test_pattern" == "ALL" ]; then
         # "ALL" is highly causes segfalt, So ignore it
-        TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null || true
+        TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" || true
     else
         TEST_PATH=$TEST_PATH "$BASEPATH/convert_tests.py" >/dev/null
     fi
@@ -84,7 +83,7 @@ run_connx() {
             dataset_name=$(basename "$dataset")
 
             echo "Running dataset $dataset"
-            result=$($CONNX_EXE -p "$BATCH_COUNT" "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk '{print $2}' || echo "Failed")
+            result=$(timeout 10 $CONNX_EXE -p "$BATCH_COUNT" "$testcase/model.onnx" "$dataset"/input_*.pb 2>&1 | grep total | awk '{print $2}' || echo "Failed")
 
             printf "connx\t%s\t%s\t%s\n" "$test_name" "$dataset_name" "$result" | tee -a "$RESULTS_TSV"
 
@@ -109,7 +108,7 @@ run_tflite() {
             dataset_name=$(basename "$dataset")
 
             echo "Running dataset $dataset"
-            result=$($TFLITE_EXE "$testcase" "$dataset" "$BATCH_COUNT" 2>/dev/null || echo "Failed")
+            result=$(timeout 10 $TFLITE_EXE "$testcase" "$dataset" "$BATCH_COUNT" 2>/dev/null || echo "Failed")
             printf "tflite\t%s\t%s\t%s\n" "$test_name" "$dataset_name" "$result" | tee -a "$RESULTS_TSV"
         done
     done
@@ -136,6 +135,6 @@ run_connx "$@"
 echo "Running tflite"
 run_tflite "$@"
 
-cat "$RESULTS_TSV"
-
 ./reform_engine_result.py
+
+echo "Results are written on $RESULTS_TSV and engine_results_reformed.tsv"
