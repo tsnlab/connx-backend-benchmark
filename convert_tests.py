@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
+import concurrent.futures
 import glob
 import os
+
 import onnx
+
 from onnx_tf.backend import prepare
+
 import tensorflow as tf
 
 TEST_PATH = os.environ['TEST_PATH']
 
-for test in glob.glob(os.path.join(TEST_PATH, 'test_*')):
+
+def convert(test):
     try:
         print('Converting {}'.format(test))
         model_path = os.path.join(test, 'model.onnx')
@@ -27,3 +32,10 @@ for test in glob.glob(os.path.join(TEST_PATH, 'test_*')):
         print('Failed to convert {}'.format(test))
     else:
         print('Successfully converted {}'.format(test))
+
+
+# Using pool to bypass segfault
+executor = concurrent.futures.ProcessPoolExecutor(max_workers=4)
+tests = glob.glob(os.path.join(TEST_PATH, 'test_*'))
+futures = [executor.submit(convert, test) for test in tests]
+concurrent.futures.wait(futures)
