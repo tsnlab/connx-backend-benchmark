@@ -3,11 +3,13 @@
 import csv
 from collections import defaultdict
 
+IN_FILE = 'engine_results.tsv'
+OUT_FILE = 'engine_results_reformed.tsv'
 
 results = defaultdict(dict)
 
 # Read tsv file
-with open('engine_results.tsv', 'r') as tsvfile:
+with open(IN_FILE, 'r') as tsvfile:
     reader = csv.reader(tsvfile, delimiter='\t')
     next(reader)  # Skip header
     for row in reader:
@@ -16,7 +18,7 @@ with open('engine_results.tsv', 'r') as tsvfile:
 
 
 # Write tsv file
-with open('engine_results_reformed.csv', 'w') as tsvfile:
+with open(OUT_FILE, 'w') as tsvfile:
     writer = csv.writer(tsvfile, delimiter='\t')
     writer.writerow(['test_name', 'dataset_name', 'connx', 'tflite'])
     for (test_name, dataset_name), engine_results in results.items():
