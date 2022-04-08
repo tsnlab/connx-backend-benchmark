@@ -1,5 +1,9 @@
 #!/bin/bash
+# Disable "not found" shellcheck error
+# shellcheck disable=SC1091
+
 set -eo pipefail
+
 
 backend="${1:-cpu}"
 
@@ -8,9 +12,11 @@ case $backend in
         CFLAGS="XNNPACK/build/local/libXNNPACK.a XNNPACK/build/local/cpuinfo/libcpuinfo.a XNNPACK/build/local/clog/libclog.a XNNPACK/build/local/pthreadpool/libpthreadpool.a -lpthread -I XNNPACK/include/ -I XNNPACK/build/local/pthreadpool-source/include/ -Wno-deprecated-declarations"
 
         echo '* XNNPACK: -O0'
+        # shellcheck disable=SC2086
         gcc -O0 src/main.c src/xnnpack.c $CFLAGS && ./a.out
 
         echo '* XNNPACK: -O3'
+        # shellcheck disable=SC2086
         gcc -O3 src/main.c src/xnnpack.c $CFLAGS && ./a.out
 
         rm -f a.out
@@ -24,9 +30,11 @@ case $backend in
         CFLAGS="$(pkg-config --cflags --libs libxsmm) -lblas"
 
         echo '* XSMM: -O0'
+        # shellcheck disable=SC2086
         gcc -O0 src/main.c src/xsmm.c $CFLAGS && ./a.out
 
         echo '* XSMM: -O3'
+        # shellcheck disable=SC2086
         gcc -O3 src/main.c src/xsmm.c $CFLAGS && ./a.out
 
         rm -f a.out
@@ -47,7 +55,6 @@ case $backend in
         source "${VITIS_HOME}/settings64.sh"
         path=$(dirname "$(readlink -e "$0")")
         cd "$path" || true
-        BASEDIR=`pwd`
         target="${2:-ps}"
         option="${3:-O0}"
 
@@ -65,7 +72,7 @@ case $backend in
         app create -name test -platform design_1_wrapper -domain {freertos10_xilinx_ps7_cortexa9_0} -sysproj {test_system} -template {Empty Application(C)}
 EOF
 
-        if [ $target = "ps" ]; then
+        if [ "$target" = "ps" ]; then
             cp src/cpu.c src/main.c test/src
         else
             cp src/npu.c src/main.c test/src
@@ -73,7 +80,7 @@ EOF
 
         # increase stack and heap memory size
         sed -i 's/0x2000/0x1E8480/g' test/src/lscript.ld
-        if [ $option = "O0" ]; then
+        if [ "$option" = "O0" ]; then
             xsct <<-EOF
             setws
             app config -name test compiler-optimization "None (-O0)"
@@ -87,7 +94,7 @@ EOF
 
         # application config, and build
         # reset board, and upload code to board
-        if [ $target = "npu" ]; then
+        if [ "$target" = "npu" ]; then
             xsct << EOF
             setws
             app config -name test define-compiler-symbols "__npu__"
