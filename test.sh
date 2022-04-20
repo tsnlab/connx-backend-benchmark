@@ -79,7 +79,7 @@ EOF
         fi
 
         # increase stack and heap memory size
-        sed -i 's/0x2000/0x1E8480/g' test/src/lscript.ld
+        sed -i 's/0x2000/0x10000/g' test/src/lscript.ld
         if [ "$option" = "O0" ]; then
             xsct <<-EOF
             setws
