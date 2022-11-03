@@ -37,6 +37,7 @@ make_tests() {
 
     if [ "$test_pattern" == "ALL" ]; then
         find_pattern="*"
+        test_pattern="*"
     else
         find_pattern="$test_pattern"
     fi
